@@ -1,7 +1,8 @@
-import { initalPostList } from 'constants/blog'
-import PreviousMap from 'postcss/lib/previous-map'
-import { Fragment, useEffect, useState } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { RootState } from 'store'
 import { Post } from 'types/blog.type'
+import { addPost, cancelEditingPost, finishEditingPost } from '../blog.reducer'
 const initialState: Post = {
   description: '',
   featuredImage: '',
@@ -11,9 +12,28 @@ const initialState: Post = {
   id: ''
 }
 export default function CreatePost() {
-  const [formData ,setFormData] = useState<Post>(initialState)
+  const [formData, setFormData] = useState<Post>(initialState)
+  const dispatch = useDispatch()
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (editingPost) {
+      dispatch(finishEditingPost(formData))
+    }
+    if (!editingPost) {
+      const dataForm = { ...formData }
+      dispatch(addPost(dataForm))
+    }
+    setFormData(initialState)
+  }
+  const editingPost = useSelector((state: RootState) => state.blog.editingPost)
+  const handleCancelEditingPost = () => {
+    dispatch(cancelEditingPost)
+  }
+  useEffect(() => {
+    setFormData(editingPost || initialState)
+  }, [editingPost])
   return (
-    <form >
+    <form onSubmit={handleSubmit} onReset={handleCancelEditingPost}>
       <div className='mb-6'>
         <label htmlFor='title' className='mb-2 block text-sm font-medium text-gray-900 dark:text-gray-300'>
           Title
@@ -24,8 +44,8 @@ export default function CreatePost() {
           className='block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-blue-500'
           placeholder='Title'
           required
-          value = {formData.title}
-          onChange = {event => setFormData((prev) => ({...prev,title:event.target.value}))}
+          value={formData.title}
+          onChange={(event) => setFormData((prev) => ({ ...prev, title: event.target.value }))}
         />
       </div>
       <div className='mb-6'>
@@ -38,8 +58,8 @@ export default function CreatePost() {
           className='block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-blue-500'
           placeholder='Url image'
           required
-          value = {formData.featuredImage}
-          onChange = {event => setFormData((prev) => ({...prev,featuredImage:event.target.value}))}
+          value={formData.featuredImage}
+          onChange={(event) => setFormData((prev) => ({ ...prev, featuredImage: event.target.value }))}
         />
       </div>
       <div className='mb-6'>
@@ -53,8 +73,8 @@ export default function CreatePost() {
             className='block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-blue-500'
             placeholder='Your description...'
             required
-            value = {formData.description}
-          onChange = {event => setFormData((prev) => ({...prev,description:event.target.value}))}
+            value={formData.description}
+            onChange={(event) => setFormData((prev) => ({ ...prev, description: event.target.value }))}
           />
         </div>
       </div>
@@ -68,8 +88,8 @@ export default function CreatePost() {
           className='block w-56 rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-blue-500'
           placeholder='Title'
           required
-          value = {formData.publishDate}
-          onChange = {event => setFormData((prev) => ({...prev,publishDate:event.target.value}))}
+          value={formData.publishDate}
+          onChange={(event) => setFormData((prev) => ({ ...prev, publishDate: event.target.value }))}
         />
       </div>
       <div className='mb-6 flex items-center'>
@@ -77,14 +97,15 @@ export default function CreatePost() {
           id='publish'
           type='checkbox'
           className='h-4 w-4 focus:ring-2 focus:ring-blue-500'
-          value = {formData.published || any}
-          onChange = {event => setFormData((prev) => ({...prev,published:event.target.checked}))}
+          checked={formData.published}
+          onChange={(event) => setFormData((prev) => ({ ...prev, published: event.target.checked }))}
         />
         <label htmlFor='publish' className='ml-2 text-sm font-medium text-gray-900'>
           Publish
         </label>
       </div>
       <div>
+        {editingPost && (
           <Fragment>
             <button
               type='submit'
@@ -103,6 +124,8 @@ export default function CreatePost() {
               </span>
             </button>
           </Fragment>
+        )}
+        {!editingPost && (
           <button
             className='group relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-purple-600 to-blue-500 p-0.5 text-sm font-medium text-gray-900 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300 group-hover:from-purple-600 group-hover:to-blue-500 dark:text-white dark:focus:ring-blue-800'
             type='submit'
@@ -111,7 +134,7 @@ export default function CreatePost() {
               Publish Post
             </span>
           </button>
-        
+        )}
       </div>
     </form>
   )

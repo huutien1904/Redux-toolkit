@@ -1,7 +1,6 @@
 {
-  "plugin": ["react", "prettier"],
-  "root": true,
   "extends": ["react-app", "prettier"],
+  "plugin": ["react-app", "prettier"],
   "rules": {
     "prettier/prettier": [
       "warn",
